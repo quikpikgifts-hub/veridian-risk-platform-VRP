@@ -1,0 +1,34 @@
+{
+  "name":            "veridian-platform",
+  "buildCommand":    "npm run build",
+  "outputDirectory": ".next",
+  "framework":       "nextjs",
+  "regions":         ["iad1"],
+
+  "functions": {
+    "app/api/ai-agent/route.ts":        { "maxDuration": 55 },
+    "app/api/generate-report/route.ts": { "maxDuration": 55 },
+    "app/api/create-incident/route.ts": { "maxDuration": 55 },
+    "app/api/consultation/route.ts":    { "maxDuration": 30 },
+    "app/api/audit/route.ts":           { "maxDuration": 15 },
+    "app/api/health/route.ts":          { "maxDuration": 10 }
+  },
+
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag",          "value": "noindex, nofollow" },
+        { "key": "X-Content-Type-Options", "value": "nosniff"          },
+        { "key": "X-Frame-Options",        "value": "DENY"             },
+        { "key": "Referrer-Policy",        "value": "no-referrer"      }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, must-revalidate" }
+      ]
+    }
+  ]
+}

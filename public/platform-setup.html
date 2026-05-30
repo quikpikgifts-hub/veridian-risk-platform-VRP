@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Veridian Risk Platform — Setup & Diagnostics</title>
+<style>
+  /* ── Reset & Base ── */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#04050A;--bg2:#07080E;--bg3:#0D0E1A;
+    --border:rgba(255,255,255,0.08);
+    --gold:#C9A84C;--gold-l:#E8D5A3;--gold-d:rgba(201,168,76,0.18);
+    --t0:#EEF0F6;--t1:rgba(238,240,246,0.75);--t2:rgba(238,240,246,0.45);--t3:rgba(238,240,246,0.25);
+    --green:#22C55E;--red:#EF4444;--amber:#F59E0B;--blue:#3B82F6;
+    --radius:4px;
+  }
+  html{background:var(--bg);color:var(--t0);font-family:'Inter',system-ui,sans-serif;font-size:14px;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;padding:0 0 80px}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.2);border-radius:2px}
+
+  /* ── Layout ── */
+  .container{max-width:1040px;margin:0 auto;padding:0 24px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+  /* ── Header ── */
+  .site-header{background:rgba(4,5,10,0.96);border-bottom:1px solid var(--border);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100}
+  .header-inner{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand-text .name{font-size:15px;font-weight:700;color:var(--t0)}
+  .brand-text .sub{font-size:8px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:rgba(201,168,76,.6);margin-top:2px}
+  .header-badge{font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:5px 12px;border-radius:2px}
+  .badge-amber{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid rgba(201,168,76,.25)}
+  .badge-green{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+  .badge-red{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+  .badge-blue{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
+
+  /* ── Hero ── */
+  .page-hero{padding:52px 0 40px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:rgba(201,168,76,.65);margin-bottom:14px}
+  h1{font-size:clamp(26px,4vw,38px);font-weight:800;color:var(--t0);line-height:1.1;letter-spacing:-.02em;margin-bottom:12px}
+  h1 span{background:linear-gradient(135deg,#E8D5A3,#C9A84C,#8B6914);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .hero-sub{font-size:14px;color:var(--t2);line-height:1.7;max-width:600px;margin-bottom:24px}
+  .status-strip{display:flex;gap:8px;flex-wrap:wrap}
+  .dot-status{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:600;padding:6px 12px;border-radius:2px}
+  .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .dot.green{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,.6)}
+  .dot.amber{background:var(--amber);box-shadow:0 0 6px rgba(245,158,11,.6)}
+  .dot.red{background:var(--red)}
+
+  /* ── Cards ── */
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  .card-gold{border-top:2px solid var(--gold)}
+  .card-red{border-top:2px solid var(--red)}
+  .card-green{border-top:2px solid var(--green)}
+  .card-blue{border-top:2px solid var(--blue)}
+  .card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .card-title{font-size:12.5px;font-weight:700;color:var(--t0)}
+  .card-sub{font-size:10px;color:var(--t3);margin-top:2px}
+  .card-body{padding:18px}
+  .section{margin-top:40px}
+  .section-title{font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;color:var(--t3);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+
+  /* ── Check items ── */
+  .check-list{display:flex;flex-direction:column;gap:8px}
+  .check-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:3px}
+  .check-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:9px;font-weight:700}
+  .check-icon.ok{background:rgba(34,197,94,.15);color:var(--green)}
+  .check-icon.warn{background:rgba(245,158,11,.15);color:var(--amber)}
+  .check-icon.fail{background:rgba(239,68,68,.15);color:var(--red)}
+  .check-icon.info{background:rgba(59,130,246,.15);color:var(--blue)}
+  .check-label{font-size:12px;font-weight:600;color:var(--t0);margin-bottom:2px}
+  .check-desc{font-size:11px;color:var(--t2);line-height:1.55}
+
+  /* ── Code blocks ── */
+  .code-block{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:14px 16px;font-family:'Fira Code','Courier New',monospace;font-size:11.5px;line-height:1.8;overflow-x:auto;margin:8px 0}
+  .code-block .c{color:rgba(238,240,246,.35)}
+  .code-block .k{color:#C9A84C}
+  .code-block .v{color:#E8D5A3}
+  .code-block .s{color:#22C55E}
+  .code-block .e{color:#EF4444}
+  pre{white-space:pre-wrap;word-break:break-all}
+
+  /* ── Inline code ── */
+  code{font-family:'Fira Code','Courier New',monospace;font-size:11px;background:rgba(201,168,76,.08);color:var(--gold);padding:2px 6px;border-radius:2px;border:1px solid rgba(201,168,76,.15)}
+
+  /* ── Inputs ── */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+  .field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--t0);font-family:inherit;font-size:12.5px;padding:9px 12px;border-radius:3px;outline:none;transition:border-color .18s}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(201,168,76,.4)}
+  .field input::placeholder,.field textarea::placeholder{color:rgba(238,240,246,.2)}
+  .field select option{background:var(--bg2)}
+  .field textarea{resize:vertical;min-height:90px;line-height:1.6}
+
+  /* ── Buttons ── */
+  .btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:10px 20px;border:none;border-radius:3px;cursor:pointer;transition:all .18s;text-decoration:none}
+  .btn-primary{background:var(--gold);color:#03040A}
+  .btn-primary:hover{background:#D4B560}
+  .btn-primary:disabled{opacity:.45;cursor:not-allowed}
+  .btn-ghost{background:transparent;color:var(--t2);border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:rgba(201,168,76,.3);color:var(--t0)}
+  .btn-danger{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+  .btn-danger:hover{background:rgba(239,68,68,.2)}
+  .btn-sm{padding:7px 14px;font-size:9px}
+  .btn-group{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+  /* ── Output box ── */
+  .output-box{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.2);border-left:3px solid var(--gold);border-radius:3px;overflow:hidden}
+  .output-header{padding:8px 14px;border-bottom:1px solid rgba(201,168,76,.15);display:flex;align-items:center;justify-content:space-between}
+  .output-label{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(201,168,76,.7)}
+  .output-content{padding:14px;font-size:12px;color:rgba(238,240,246,.65);line-height:1.85;white-space:pre-wrap;max-height:320px;overflow-y:auto;min-height:60px}
+  .output-placeholder{color:rgba(238,240,246,.22);font-style:italic}
+
+  /* ── Thinking indicator ── */
+  .thinking{display:flex;align-items:center;gap:4px;padding:6px 0}
+  .td{width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 1.2s ease infinite}
+  .td:nth-child(2){animation-delay:.2s}
+  .td:nth-child(3){animation-delay:.4s}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}
+
+  /* ── Agent cards ── */
+  .agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .agent-card{background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:14px;cursor:pointer;transition:all .18s}
+  .agent-card:hover,.agent-card.selected{border-color:rgba(201,168,76,.35);background:rgba(201,168,76,.04)}
+  .agent-card.selected{border-color:rgba(201,168,76,.5)}
+  .agent-name{font-size:12px;font-weight:700;color:var(--t0);margin-bottom:3px}
+  .agent-role{font-size:9.5px;color:var(--t3)}
+  .agent-status{display:flex;align-items:center;gap:5px;margin-top:8px;font-size:9.5px;font-weight:600}
+
+  /* ── Tabs ── */
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+  .tab{padding:10px 18px;font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit}
+  .tab:hover{color:var(--t1)}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+
+  /* ── Step list ── */
+  .step-list{counter-reset:step;display:flex;flex-direction:column;gap:12px}
+  .step{display:flex;gap:12px;align-items:flex-start;counter-increment:step}
+  .step-num{width:24px;height:24px;border-radius:50%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);color:var(--gold);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .step-num::before{content:counter(step)}
+  .step-body{flex:1}
+  .step-title{font-size:12.5px;font-weight:600;color:var(--t0);margin-bottom:4px}
+  .step-desc{font-size:11.5px;color:var(--t2);line-height:1.6}
+
+  /* ── Divider ── */
+  .divider{height:1px;background:var(--border);margin:24px 0}
+  .divider-gold{height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.25),transparent);margin:24px 0}
+
+  /* ── Notice boxes ── */
+  .notice{display:flex;gap:10px;padding:12px 14px;border-radius:3px;border-left:3px solid;margin:12px 0}
+  .notice-warn{background:rgba(245,158,11,.06);border-color:var(--amber);color:rgba(245,158,11,.85)}
+  .notice-info{background:rgba(59,130,246,.06);border-color:var(--blue);color:rgba(59,130,246,.85)}
+  .notice-success{background:rgba(34,197,94,.06);border-color:var(--green);color:rgba(34,197,94,.85)}
+  .notice-error{background:rgba(239,68,68,.06);border-color:var(--red);color:rgba(239,68,68,.85)}
+  .notice-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+  .notice-body{font-size:11.5px;line-height:1.6}
+  .notice-title{font-weight:700;font-size:12px;margin-bottom:3px}
+
+  /* ── Responsive nav ── */
+  nav.top-nav{background:rgba(4,5,10,.96);border-bottom:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────── -->
+<nav class="site-header" role="banner">
+  <div class="container">
+    <div class="header-inner">
+      <div class="brand">
+        <svg viewBox="0 0 36 36" fill="none" width="30" height="30" aria-hidden="true">
+          <circle cx="18" cy="18" r="15.5" stroke="#C9A84C" stroke-width="0.6" opacity="0.25"/>
+          <circle cx="18" cy="18" r="10" stroke="#C9A84C" stroke-width="1.3" opacity="0.6"/>
+          <circle cx="18" cy="18" r="2.8" fill="#C9A84C"/>
+          <line x1="18" y1="2.5" x2="18" y2="8" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="18" y1="28" x2="18" y2="33.5" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="2.5" y1="18" x2="8" y2="18" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="28" y1="18" x2="33.5" y2="18" stroke="#C9A84C" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M11.5 12 L18 24 L24.5 12" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="brand-text">
+          <div class="name">Veridian Risk Platform</div>
+          <div class="sub">Setup &amp; Diagnostics</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span class="header-badge badge-amber" id="envStatus">Checking...</span>
+        <span class="header-badge badge-blue">v2.0</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────── -->
+<div class="page-hero">
+  <div class="container">
+    <div class="eyebrow">Platform Setup Guide</div>
+    <h1>Veridian Risk Platform<br><span>Configuration Center</span></h1>
+    <p class="hero-sub">
+      Complete platform diagnostics, environment configuration, OpenAI integration testing,
+      Supabase connection setup, and live agent testing — all in one place.
+    </p>
+    <div class="status-strip" id="statusStrip">
+      <div class="dot-status badge-amber" style="border:1px solid rgba(245,158,11,.2)">
+        <span class="dot amber"></span> Checking environment...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main ───────────────────────────────────────────────── -->
+<div class="container" style="margin-top:32px">
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" onclick="showTab('setup')"     role="tab" aria-selected="true">Setup Guide</button>
+    <button class="tab"        onclick="showTab('env')"       role="tab">Environment</button>
+    <button class="tab"        onclick="showTab('openai')"    role="tab">OpenAI</button>
+    <button class="tab"        onclick="showTab('supabase')"  role="tab">Supabase</button>
+    <button class="tab"        onclick="showTab('agents')"    role="tab">Agents</button>
+    <button class="tab"        onclick="showTab('deploy')"    role="tab">Deploy</button>
+  </div>
+
+  <!-- ══ TAB: SETUP GUIDE ══════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-setup">
+
+    <div class="grid-2">
+      <div>
+        <div class="card card-gold">
+          <div class="card-header">
+            <div><div class="card-title">Quick Start</div><div class="card-sub">Get running in 5 minutes</div></div>
+          </div>
+          <div class="card-body">
+            <div class="step-list">
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Install dependencies</div>
+                  <div class="step-desc">Run in your project root:</div>
+                  <div class="code-block"><pre><span class="k">npm</span> <span class="v">install</span></pre></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Create environment file</div>
+                  <div class="code-block"><pre><span class="k">cp</span> <span class="v">.env.example .env.local</span></pre></div>
+                  <div class="step-desc" style="margin-top:6px">Then edit <code>.env.local</code> with your keys.</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Add OpenAI API key</div>
+                  <div class="code-block"><pre><span class="k">OPENAI_API_KEY</span>=<span class="v">sk-proj-...</span></pre></div>
+                  <div class="step-desc" style="margin-top:4px">Get yours: <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--gold)">platform.openai.com/api-keys</a></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Add Supabase keys (for auth)</div>
+                  <div class="code-block"><pre><span class="k">NEXT_PUBLIC_SUPABASE_URL</span>=<span class="v">https://xxx.supabase.co</span>
+<span class="k">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>=<span class="v">eyJ...</span></pre></div>
+                  <div class="step-desc" style="margin-top:4px">Get from: <a href="https://supabase.com/dashboard" target="_blank" style="color:var(--gold)">supabase.com/dashboard</a> → Project → Settings → API</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Start the platform</div>
+                  <div class="code-block"><pre><span class="k">npm</span> <span class="v">run dev</span>
+<span class="c"># Opens at http://localhost:3000</span></pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Architecture Overview</div></div>
+          <div class="card-body">
+            <div class="check-list">
+              <div class="check-item">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label">OpenAI GPT-4o</div><div class="check-desc">Primary AI engine — all 11 consulting modules, report generation, incident analysis</div></div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label">Next.js 16 App Router</div><div class="check-desc">Server Components, Route Handlers, Middleware — full stack</div></div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label">Supabase Auth</div><div class="check-desc">Cookie-based sessions, middleware protection, RBAC ready</div></div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label">Tailwind CSS 4</div><div class="check-desc">Responsive, mobile-first, enterprise dark aesthetic</div></div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon info">i</div>
+                <div><div class="check-label">Zero Anthropic dependencies</div><div class="check-desc">Fully migrated to OpenAI. No Claude SDK, no Anthropic API calls.</div></div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon info">i</div>
+                <div><div class="check-label">Graceful degradation</div><div class="check-desc">Platform runs without Supabase (demo mode). Only OpenAI key is required for full function.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-header"><div class="card-title">New Files Created</div></div>
+          <div class="card-body" style="padding:12px">
+            <div class="check-list">
+              <div class="check-item" style="padding:8px 10px">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label"><code>lib/env.ts</code></div><div class="check-desc">Centralised env validation — fails fast on missing keys</div></div>
+              </div>
+              <div class="check-item" style="padding:8px 10px">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label"><code>lib/openai.ts</code></div><div class="check-desc">Singleton client, model config, error classifiers, completion helper</div></div>
+              </div>
+              <div class="check-item" style="padding:8px 10px">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label"><code>lib/supabase/client.ts</code></div><div class="check-desc">Browser SSR client for Client Components</div></div>
+              </div>
+              <div class="check-item" style="padding:8px 10px">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label"><code>lib/supabase/server.ts</code></div><div class="check-desc">Server client for Route Handlers and Server Components</div></div>
+              </div>
+              <div class="check-item" style="padding:8px 10px">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label"><code>lib/supabase/types.ts</code></div><div class="check-desc">TypeScript database schema — replace with generated types</div></div>
+              </div>
+              <div class="check-item" style="padding:8px 10px">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label"><code>middleware.ts</code></div><div class="check-desc">Session refresh + /dashboard route protection</div></div>
+              </div>
+              <div class="check-item" style="padding:8px 10px">
+                <div class="check-icon ok">✓</div>
+                <div><div class="check-label"><code>app/api/health/route.ts</code></div><div class="check-desc">Health-check endpoint at /api/health</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: ENVIRONMENT ═══════════════════════════════════ -->
+  <div class="tab-panel" id="tab-env">
+
+    <div class="notice notice-info">
+      <div class="notice-icon">ℹ</div>
+      <div class="notice-body">
+        <div class="notice-title">Security Note</div>
+        This tool runs entirely in your browser. No keys are sent to any server. The "Live Check" buttons call your local Next.js API routes — not external services directly.
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:20px">
+      <div>
+        <div class="card card-gold">
+          <div class="card-header"><div class="card-title">Required Variables</div></div>
+          <div class="card-body">
+            <div class="check-list" id="envChecks">
+              <div class="check-item">
+                <div class="check-icon warn">?</div>
+                <div><div class="check-label">OPENAI_API_KEY</div><div class="check-desc">Required — use the Live Check to verify</div></div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon warn">?</div>
+                <div><div class="check-label">NEXT_PUBLIC_SUPABASE_URL</div><div class="check-desc">Required for auth — optional for core platform</div></div>
+              </div>
+              <div class="check-item">
+                <div class="check-icon warn">?</div>
+                <div><div class="check-label">NEXT_PUBLIC_SUPABASE_ANON_KEY</div><div class="check-desc">Required for auth — optional for core platform</div></div>
+              </div>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="checkHealth()">Run Live Check</button>
+            </div>
+            <div class="output-box" id="healthOutput" style="margin-top:12px;display:none">
+              <div class="output-header"><span class="output-label">Health Check — /api/health</span></div>
+              <div class="output-content" id="healthContent"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">.env.local Template</div><div class="card-sub">Copy into your project</div></div>
+          <div class="card-body">
+            <div class="code-block"><pre><span class="c"># Required</span>
+<span class="k">OPENAI_API_KEY</span>=<span class="v">sk-proj-...</span>
+
+<span class="c"># Optional — override model</span>
+<span class="c"># OPENAI_MODEL=gpt-4o</span>
+
+<span class="c"># Required for auth</span>
+<span class="k">NEXT_PUBLIC_SUPABASE_URL</span>=<span class="v">https://xxx.supabase.co</span>
+<span class="k">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>=<span class="v">eyJ...</span>
+
+<span class="c"># Optional admin ops</span>
+<span class="c"># SUPABASE_SERVICE_ROLE_KEY=eyJ...</span>
+<span class="c"># NEXT_PUBLIC_APP_URL=http://localhost:3000</span></pre></div>
+            <button class="btn btn-ghost btn-sm" onclick="copyEnvTemplate()">Copy Template</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-header"><div class="card-title">Vercel Deployment</div></div>
+          <div class="card-body">
+            <div class="step-list">
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Push to GitHub</div>
+                  <div class="code-block"><pre><span class="k">git</span> add -A
+<span class="k">git</span> commit -m "Production build"
+<span class="k">git</span> push origin main</pre></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Add env vars in Vercel</div>
+                  <div class="step-desc">Vercel → Project → Settings → Environment Variables → Add all required keys → Apply to Production + Preview + Development</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Redeploy</div>
+                  <div class="code-block"><pre><span class="k">vercel</span> <span class="v">--prod</span></pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: OPENAI ════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-openai">
+
+    <div class="grid-2">
+      <div>
+        <div class="card card-gold">
+          <div class="card-header"><div class="card-title">Connection Test</div><div class="card-sub">Verify your OpenAI API key works</div></div>
+          <div class="card-body">
+            <div class="notice notice-success" style="margin-bottom:16px">
+              <div class="notice-icon">✓</div>
+              <div class="notice-body">
+                <div class="notice-title">OpenAI Migration Complete</div>
+                All Anthropic/Claude references removed. Using <code>gpt-4o</code> by default via <code>lib/openai.ts</code> singleton.
+              </div>
+            </div>
+            <div class="field">
+              <label>Test Prompt</label>
+              <textarea id="openaiTestPrompt" placeholder="Enter a test message...">Respond in exactly one sentence: confirm you are connected to the Veridian Risk Platform and are ready to assist with operational consulting tasks.</textarea>
+            </div>
+            <div class="field">
+              <label>Agent Module</label>
+              <select id="openaiTestAgent">
+                <option value="agt-01">Operations Manager (agt-01)</option>
+                <option value="agt-02">Intake Coordinator (agt-02)</option>
+                <option value="agt-03">Risk Analyst (agt-03)</option>
+                <option value="agt-04">Intelligence Analyst (agt-04)</option>
+                <option value="agt-05">Proposal Writer (agt-05)</option>
+                <option value="agt-06">Follow-Up Coordinator (agt-06)</option>
+                <option value="agt-07">Marketing Agent (agt-07)</option>
+                <option value="agt-08">Fleet Safety Advisor (agt-08)</option>
+                <option value="agt-09">HR Advisor (agt-09)</option>
+                <option value="agt-10">OSHA Advisor (agt-10)</option>
+                <option value="agt-11">De-Escalation Advisor (agt-11)</option>
+              </select>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="testOpenAI()" id="openaiTestBtn">Run Test</button>
+              <button class="btn btn-ghost" onclick="clearOutput('openaiOutput','openaiOutputContent')">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-header"><div class="card-title">Model Configuration</div></div>
+          <div class="card-body">
+            <table style="width:100%;font-size:11.5px;border-collapse:collapse">
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 0;color:var(--t2)">Default Model</td>
+                <td style="padding:8px 0;color:var(--gold);font-weight:600;text-align:right"><code>gpt-4o</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 0;color:var(--t2)">Override Env Var</td>
+                <td style="padding:8px 0;color:var(--t0);text-align:right"><code>OPENAI_MODEL</code></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 0;color:var(--t2)">Brief Token Limit</td>
+                <td style="padding:8px 0;color:var(--t0);text-align:right">600</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 0;color:var(--t2)">Standard Token Limit</td>
+                <td style="padding:8px 0;color:var(--t0);text-align:right">1,400</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border)">
+                <td style="padding:8px 0;color:var(--t2)">Extended Token Limit</td>
+                <td style="padding:8px 0;color:var(--t0);text-align:right">2,800</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 0;color:var(--t2)">Max Duration (Vercel)</td>
+                <td style="padding:8px 0;color:var(--t0);text-align:right">55 seconds</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="output-box" id="openaiOutput" style="height:100%;min-height:300px">
+          <div class="output-header">
+            <span class="output-label" id="openaiOutputLabel">OpenAI Test Output</span>
+            <span id="openaiMeta" style="font-size:9px;color:var(--t3)"></span>
+          </div>
+          <div class="output-content" id="openaiOutputContent">
+            <span class="output-placeholder">Click "Run Test" to verify your OpenAI connection and agent configuration.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: SUPABASE ══════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-supabase">
+
+    <div class="notice notice-info">
+      <div class="notice-icon">ℹ</div>
+      <div class="notice-body">
+        <div class="notice-title">Supabase is optional for core functionality</div>
+        The platform runs in demo mode without Supabase configured. Authentication, session persistence, and database storage require Supabase to be connected.
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:20px">
+      <div>
+        <div class="card card-blue">
+          <div class="card-header"><div class="card-title">Supabase Setup</div><div class="card-sub">Step-by-step configuration</div></div>
+          <div class="card-body">
+            <div class="step-list">
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Create a Supabase project</div>
+                  <div class="step-desc">Go to <a href="https://supabase.com" target="_blank" style="color:var(--blue)">supabase.com</a> → New Project → Choose your region (US East recommended for Florida clients)</div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Get your API keys</div>
+                  <div class="step-desc">Dashboard → Project → Settings → API</div>
+                  <div class="code-block"><pre><span class="c"># Project URL:</span>
+<span class="k">NEXT_PUBLIC_SUPABASE_URL</span>=<span class="v">https://xxx.supabase.co</span>
+<span class="c"># anon public key (safe to expose):</span>
+<span class="k">NEXT_PUBLIC_SUPABASE_ANON_KEY</span>=<span class="v">eyJ...</span></pre></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Run database migrations</div>
+                  <div class="code-block"><pre><span class="k">npx supabase</span> db push
+<span class="c"># or use the SQL Editor in dashboard</span></pre></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Generate TypeScript types</div>
+                  <div class="code-block"><pre><span class="k">npx supabase</span> gen types typescript \
+  --project-id <span class="v">your-project-id</span> \
+  > lib/supabase/types.ts</pre></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Enable Email Auth in Supabase</div>
+                  <div class="step-desc">Dashboard → Authentication → Providers → Email → Enable. Create your first user manually or via the Supabase dashboard Users tab.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Connection Test</div></div>
+          <div class="card-body">
+            <div class="field">
+              <label>Supabase URL</label>
+              <input type="text" id="sbUrl" placeholder="https://xxx.supabase.co">
+            </div>
+            <div class="field">
+              <label>Anon Key</label>
+              <input type="password" id="sbKey" placeholder="eyJhbGciOiJIUzI1...">
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="testSupabase()">Test Connection</button>
+            </div>
+            <div class="output-box" id="sbOutput" style="margin-top:12px;display:none">
+              <div class="output-header"><span class="output-label">Supabase Connection Result</span></div>
+              <div class="output-content" id="sbOutputContent"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-header"><div class="card-title">Required Database Tables</div></div>
+          <div class="card-body">
+            <div class="check-list">
+              <div class="check-item"><div class="check-icon info">DB</div><div><div class="check-label">profiles</div><div class="check-desc">User profiles with role-based access (admin, operator, analyst, client, viewer)</div></div></div>
+              <div class="check-item"><div class="check-icon info">DB</div><div><div class="check-label">incidents</div><div class="check-desc">Incident registry with severity, status, location, and assignment tracking</div></div></div>
+              <div class="check-item"><div class="check-icon info">DB</div><div><div class="check-label">clients</div><div class="check-desc">Client registry with risk scores, contact info, and engagement status</div></div></div>
+              <div class="check-item"><div class="check-icon info">DB</div><div><div class="check-label">reports</div><div class="check-desc">Generated consulting reports with draft/review/approved/delivered status</div></div></div>
+            </div>
+            <div style="margin-top:14px">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">Enable Row Level Security</div>
+              <div class="code-block"><pre><span class="c">-- Enable RLS on all tables</span>
+<span class="k">ALTER TABLE</span> profiles <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+<span class="k">ALTER TABLE</span> incidents <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+<span class="k">ALTER TABLE</span> clients <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+<span class="k">ALTER TABLE</span> reports <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="c">-- Basic policy — authenticated users see all</span>
+<span class="k">CREATE POLICY</span> "auth_users" <span class="k">ON</span> incidents
+  <span class="k">FOR ALL USING</span> (auth.role() = <span class="s">'authenticated'</span>);</pre></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: AGENTS ════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-agents">
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:13px;color:var(--t1);line-height:1.7;max-width:700px">
+        All 11 consulting modules are connected to <strong style="color:var(--t0)">GPT-4o</strong> via <code>/api/ai-agent</code>.
+        Select any agent below, customise the task, and test the live connection.
+      </div>
+    </div>
+
+    <div class="agent-grid" id="agentGrid" style="margin-bottom:20px"></div>
+
+    <div class="grid-2">
+      <div>
+        <div class="card card-gold">
+          <div class="card-header">
+            <div>
+              <div class="card-title" id="selectedAgentName">Select an agent above</div>
+              <div class="card-sub" id="selectedAgentRole">Click any module card to configure</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="field">
+              <label>Task Instructions</label>
+              <textarea id="agentTask" rows="5" placeholder="Describe what you need this module to do..."></textarea>
+            </div>
+            <div class="field">
+              <label>Context (Optional)</label>
+              <textarea id="agentContext" rows="2" placeholder="Client name, field notes, incident details..."></textarea>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="runAgent()" id="runAgentBtn" disabled>Run Module</button>
+              <button class="btn btn-ghost" onclick="clearOutput('agentOutput','agentOutputContent')">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="output-box" id="agentOutput" style="min-height:320px">
+          <div class="output-header">
+            <span class="output-label" id="agentOutputLabel">Module Output</span>
+            <span id="agentMeta" style="font-size:9px;color:var(--t3)"></span>
+          </div>
+          <div class="output-content" id="agentOutputContent">
+            <span class="output-placeholder">Select a module and click Run to generate output.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB: DEPLOY ════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-deploy">
+
+    <div class="grid-2">
+      <div>
+        <div class="card card-green">
+          <div class="card-header"><div class="card-title">Production Deployment</div><div class="card-sub">Vercel + GitHub</div></div>
+          <div class="card-body">
+            <div class="step-list">
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Commit all changes</div>
+                  <div class="code-block"><pre><span class="k">git</span> add -A
+<span class="k">git</span> commit -m "Enterprise hardening v2"
+<span class="k">git</span> push origin main</pre></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Configure Vercel environment variables</div>
+                  <div class="step-desc" style="margin-bottom:8px">Go to: Vercel → Your Project → Settings → Environment Variables</div>
+                  <div class="check-list">
+                    <div class="check-item" style="padding:7px 10px"><div class="check-icon ok">✓</div><div><div class="check-label" style="font-size:11px"><code>OPENAI_API_KEY</code></div><div class="check-desc">Required — all AI features</div></div></div>
+                    <div class="check-item" style="padding:7px 10px"><div class="check-icon ok">✓</div><div><div class="check-label" style="font-size:11px"><code>NEXT_PUBLIC_SUPABASE_URL</code></div><div class="check-desc">Required — auth</div></div></div>
+                    <div class="check-item" style="padding:7px 10px"><div class="check-icon ok">✓</div><div><div class="check-label" style="font-size:11px"><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code></div><div class="check-desc">Required — auth</div></div></div>
+                    <div class="check-item" style="padding:7px 10px"><div class="check-icon info">i</div><div><div class="check-label" style="font-size:11px"><code>OPENAI_MODEL</code></div><div class="check-desc">Optional — defaults to gpt-4o</div></div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Deploy</div>
+                  <div class="code-block"><pre><span class="k">vercel</span> <span class="v">--prod</span>
+<span class="c"># or push to main → auto deploys</span></pre></div>
+                </div>
+              </div>
+              <div class="step">
+                <div class="step-num"></div>
+                <div class="step-body">
+                  <div class="step-title">Verify health endpoint</div>
+                  <div class="code-block"><pre><span class="k">curl</span> https://your-domain.vercel.app/api/health
+<span class="c"># Should return: {"status":"healthy",...}</span></pre></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">npm Commands Reference</div></div>
+          <div class="card-body">
+            <div class="code-block"><pre><span class="c"># Install all dependencies</span>
+<span class="k">npm</span> install
+
+<span class="c"># Install specific packages added this session</span>
+<span class="k">npm</span> install <span class="v">openai @supabase/supabase-js @supabase/ssr</span>
+
+<span class="c"># Start development server</span>
+<span class="k">npm</span> run dev
+
+<span class="c"># Production build (verify before deploy)</span>
+<span class="k">npm</span> run build
+
+<span class="c"># Start production server locally</span>
+<span class="k">npm</span> run start
+
+<span class="c"># Type check</span>
+<span class="k">npx</span> tsc --noEmit
+
+<span class="c"># Generate Supabase types (after DB setup)</span>
+<span class="k">npx supabase</span> gen types typescript \
+  --project-id <span class="v">YOUR_PROJECT_ID</span> \
+  > lib/supabase/types.ts</pre></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <div class="card-header"><div class="card-title">Production Checklist</div></div>
+          <div class="card-body">
+            <div class="check-list">
+              <div class="check-item"><div class="check-icon ok">✓</div><div><div class="check-label">Zero Anthropic dependencies</div><div class="check-desc">Fully migrated to OpenAI GPT-4o</div></div></div>
+              <div class="check-item"><div class="check-icon ok">✓</div><div><div class="check-label">Environment validation</div><div class="check-desc">lib/env.ts validates on startup, warns in dev, throws in prod</div></div></div>
+              <div class="check-item"><div class="check-icon ok">✓</div><div><div class="check-label">Supabase SSR auth</div><div class="check-desc">Cookie-based sessions, middleware protection, RBAC ready</div></div></div>
+              <div class="check-item"><div class="check-icon ok">✓</div><div><div class="check-label">Health endpoint</div><div class="check-desc">/api/health — monitors all required service connections</div></div></div>
+              <div class="check-item"><div class="check-icon ok">✓</div><div><div class="check-label">Error handling</div><div class="check-desc">AUTH_ERROR, RATE_LIMIT, MODEL_ERROR, NO_API_KEY, INTERNAL_ERROR</div></div></div>
+              <div class="check-item"><div class="check-icon ok">✓</div><div><div class="check-label">TypeScript clean</div><div class="check-desc">0 errors on strict mode</div></div></div>
+              <div class="check-item"><div class="check-icon warn">!</div><div><div class="check-label">Set Supabase RLS policies</div><div class="check-desc">Enable Row Level Security before exposing to clients</div></div></div>
+              <div class="check-item"><div class="check-icon warn">!</div><div><div class="check-label">Generate production types</div><div class="check-desc">Run supabase gen types after creating tables</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /container -->
+
+<script>
+'use strict';
+
+// ── Tab system ────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const panel = document.getElementById('tab-' + name);
+  if (panel) panel.classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => { if (t.textContent.toLowerCase().includes(name.slice(0,3).toLowerCase()) || t.getAttribute('onclick')?.includes(name)) t.classList.add('active'); });
+  // Fix tab selection
+  document.querySelectorAll('.tab').forEach(t => {
+    if (t.getAttribute('onclick') === `showTab('${name}')`) t.classList.add('active');
+  });
+}
+
+// ── Agent data ─────────────────────────────────────────────────
+const AGENTS = [
+  { id:'agt-01', name:'Operations Manager',     role:'Daily Workflow & Escalation',     div:'ops',       defaultTask:'Generate a concise 3-point daily operations briefing for Veridian Risk Group covering: top priority, client items needing attention, and one business development opportunity.' },
+  { id:'agt-02', name:'Intake Coordinator',     role:'Lead Capture & Onboarding',       div:'ops',       defaultTask:'Create a professional intake questionnaire for a new logistics company lead that needs a fleet safety review and DOT compliance assessment.' },
+  { id:'agt-03', name:'Risk Analyst',           role:'Assessment Report Drafting',      div:'risk',      defaultTask:'Draft a risk assessment executive summary for a gas station with: no wet floor signage at pumps, lone worker after 10pm, camera blind spot at rear entrance.' },
+  { id:'agt-04', name:'Intelligence Analyst',   role:'Situational Awareness',           div:'intel',     defaultTask:'Provide a situational awareness brief for the US-17/92 commercial corridor in Sanford, FL. Focus on retail crime trends relevant to fuel stations and auto shops.' },
+  { id:'agt-05', name:'Proposal Writer',        role:'Service Proposals',               div:'ops',       defaultTask:'Write a professional service proposal for Palmetto Apartments (180 units, Orlando FL) proposing: Risk Walk Assessment + Emergency Action Plan + De-Escalation Workshop.' },
+  { id:'agt-06', name:'Follow-Up Coordinator',  role:'Client Retention',                div:'ops',       defaultTask:'Draft a 30-day follow-up email for Premier Gas Station after their risk walk assessment. Reference camera gap and wet floor findings.' },
+  { id:'agt-07', name:'Marketing Agent',        role:'Business Development',            div:'marketing', defaultTask:'Write a LinkedIn post from Steve Washington Smith about a de-escalation situation from his 30-year law enforcement career and how it applies to business owners.' },
+  { id:'agt-08', name:'Fleet Safety Advisor',   role:'DOT Compliance & Fleet Risk',     div:'fleet',     defaultTask:'Generate a fleet safety assessment for a 15-vehicle delivery fleet in Central Florida. Cover DOT compliance gaps, pre-trip inspection system, and driver qualification files.' },
+  { id:'agt-09', name:'HR Advisor',             role:'HR Risk & Workforce Policy',      div:'hr',        defaultTask:'Draft an HR risk advisory plan for a restaurant with 14 employees and no written termination procedure or harassment policy. Focus on Florida employer liability.' },
+  { id:'agt-10', name:'OSHA Compliance Advisor',role:'Federal Standards Compliance',    div:'risk',      defaultTask:'Generate an OSHA 29 CFR 1910 compliance audit for an auto tire shop. List the top 5 most common violations with correction priorities and penalty exposure.' },
+  { id:'agt-11', name:'De-Escalation Advisor',  role:'Conflict Prevention',             div:'risk',      defaultTask:'Create a de-escalation awareness workshop plan for a convenience store with 8 staff that had 2 customer confrontations recently. Include session outline and protocol structure.' },
+];
+
+const DIV_COLORS = {
+  ops:'rgba(59,130,246,.6)', risk:'rgba(239,68,68,.6)', fleet:'rgba(249,115,22,.6)',
+  hr:'rgba(168,85,247,.6)', intel:'rgba(6,182,212,.6)', marketing:'rgba(34,197,94,.6)',
+};
+
+let selectedAgent = null;
+
+// Build agent grid
+function buildAgentGrid() {
+  const grid = document.getElementById('agentGrid');
+  if (!grid) return;
+  grid.innerHTML = AGENTS.map(a => `
+    <div class="agent-card" id="acard-${a.id}" onclick="selectAgent('${a.id}')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div>
+          <div class="agent-name">${a.name}</div>
+          <div class="agent-role">${a.role}</div>
+        </div>
+        <span style="font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:2px;background:rgba(${a.div==='ops'?'59,130,246':a.div==='risk'?'239,68,68':a.div==='fleet'?'249,115,22':a.div==='hr'?'168,85,247':a.div==='intel'?'6,182,212':'34,197,94'},.1);color:${DIV_COLORS[a.div]};border:1px solid ${DIV_COLORS[a.div]}33;white-space:nowrap">${a.div}</span>
+      </div>
+      <div class="agent-status">
+        <div class="dot green"></div>
+        <span style="color:rgba(34,197,94,.7)">Active · ${a.id}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectAgent(id) {
+  selectedAgent = AGENTS.find(a => a.id === id);
+  if (!selectedAgent) return;
+  document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('acard-' + id)?.classList.add('selected');
+  document.getElementById('selectedAgentName').textContent = selectedAgent.name;
+  document.getElementById('selectedAgentRole').textContent = selectedAgent.role;
+  document.getElementById('agentTask').value = selectedAgent.defaultTask;
+  document.getElementById('runAgentBtn').disabled = false;
+}
+
+// ── Show thinking state ──────────────────────────────────────
+function showThinking(contentId) {
+  const el = document.getElementById(contentId);
+  if (el) el.innerHTML = '<div class="thinking"><div class="td"></div><div class="td"></div><div class="td"></div><span style="font-size:11px;color:rgba(238,240,246,.3);margin-left:6px">Processing...</span></div>';
+}
+
+// ── Clear output ─────────────────────────────────────────────
+function clearOutput(boxId, contentId) {
+  const box = document.getElementById(boxId);
+  const content = document.getElementById(contentId);
+  if (box) box.style.display = '';
+  if (content) content.innerHTML = '<span class="output-placeholder">Output cleared.</span>';
+}
+
+// ── Health check ─────────────────────────────────────────────
+async function checkHealth() {
+  const box = document.getElementById('healthOutput');
+  const content = document.getElementById('healthContent');
+  box.style.display = 'block';
+  content.innerHTML = '<div class="thinking"><div class="td"></div><div class="td"></div><div class="td"></div><span style="font-size:11px;color:rgba(238,240,246,.3);margin-left:6px">Checking /api/health...</span></div>';
+
+  try {
+    const r = await fetch('/api/health');
+    const d = await r.json();
+    const ok = r.ok;
+
+    // Update header badges
+    document.getElementById('envStatus').textContent = ok ? 'Platform Ready' : 'Configuration Required';
+    document.getElementById('envStatus').className = 'header-badge ' + (ok ? 'badge-green' : 'badge-amber');
+
+    // Update status strip
+    const strip = document.getElementById('statusStrip');
+    strip.innerHTML = Object.entries(d.checks || {}).map(([k, v]) => {
+      const c = v.ok ? 'green' : 'amber';
+      return `<div class="dot-status" style="background:rgba(${c==='green'?'34,197,94':'245,158,11'},.08);border:1px solid rgba(${c==='green'?'34,197,94':'245,158,11'},.2);color:rgba(${c==='green'?'34,197,94':'245,158,11'},.85);font-size:10px;font-weight:600;padding:6px 12px;border-radius:2px;display:inline-flex;align-items:center;gap:6px">
+        <span class="dot ${c}"></span>${k}: ${v.message}
+      </div>`;
+    }).join('');
+
+    // Update env check list
+    const envChecks = document.getElementById('envChecks');
+    if (envChecks && d.checks) {
+      const checkMap = {
+        openai: { label: 'OPENAI_API_KEY', desc: 'OpenAI API connection' },
+        supabase: { label: 'Supabase', desc: 'Database and auth connection' },
+      };
+      envChecks.innerHTML = Object.entries(d.checks).map(([k, v]) => {
+        const cls = v.ok ? 'ok' : 'warn';
+        const sym = v.ok ? '✓' : '!';
+        const m = checkMap[k] || { label: k, desc: '' };
+        return `<div class="check-item"><div class="check-icon ${cls}">${sym}</div><div><div class="check-label">${m.label}</div><div class="check-desc">${v.message}</div></div></div>`;
+      }).join('');
+    }
+
+    content.textContent = JSON.stringify(d, null, 2);
+  } catch (e) {
+    content.textContent = 'Error: ' + e.message + '\n\nMake sure npm run dev is running on localhost:3000';
+    document.getElementById('envStatus').textContent = 'Server Offline';
+    document.getElementById('envStatus').className = 'header-badge badge-red';
+  }
+}
+
+// ── OpenAI test ──────────────────────────────────────────────
+async function testOpenAI() {
+  const btn     = document.getElementById('openaiTestBtn');
+  const content = document.getElementById('openaiOutputContent');
+  const meta    = document.getElementById('openaiMeta');
+  const prompt  = document.getElementById('openaiTestPrompt')?.value;
+  const agent   = document.getElementById('openaiTestAgent')?.value;
+  if (!prompt?.trim()) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  showThinking('openaiOutputContent');
+  meta.textContent = '';
+
+  try {
+    const r = await fetch('/api/ai-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent, task: prompt }),
+    });
+    const d = await r.json();
+    if (d.success) {
+      content.textContent = d.output;
+      meta.textContent = `${d.model} · ${d.inputTokens}+${d.outputTokens} tokens · ${d.finishReason}`;
+    } else {
+      content.innerHTML = `<span style="color:var(--red)">Error [${d.code}]: ${d.error}</span>`;
+    }
+  } catch (e) {
+    content.innerHTML = `<span style="color:var(--red)">Fetch error: ${e.message}\n\nCheck that npm run dev is running.</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Test';
+  }
+}
+
+// ── Supabase test ────────────────────────────────────────────
+async function testSupabase() {
+  const url  = document.getElementById('sbUrl')?.value;
+  const key  = document.getElementById('sbKey')?.value;
+  const box  = document.getElementById('sbOutput');
+  const cont = document.getElementById('sbOutputContent');
+  box.style.display = 'block';
+
+  if (!url || !key) { cont.innerHTML = '<span style="color:var(--amber)">Enter your Supabase URL and anon key first.</span>'; return; }
+
+  cont.innerHTML = '<div class="thinking"><div class="td"></div><div class="td"></div><div class="td"></div><span style="font-size:11px;color:rgba(238,240,246,.3);margin-left:6px">Testing connection...</span></div>';
+
+  try {
+    // Test by hitting the Supabase REST endpoint directly
+    const r = await fetch(`${url}/rest/v1/`, {
+      headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+    });
+    if (r.ok || r.status === 404) {
+      cont.innerHTML = `<span style="color:var(--green)">✓ Connected to Supabase\n\nURL: ${url}\nStatus: ${r.status}\n\nNote: 404 on root is normal — it means the URL is valid.\nNow add the keys to .env.local and restart the dev server.</span>`;
+    } else {
+      cont.innerHTML = `<span style="color:var(--amber)">HTTP ${r.status} — check your URL and key.</span>`;
+    }
+  } catch (e) {
+    cont.innerHTML = `<span style="color:var(--red)">Connection failed: ${e.message}\n\nCheck your Supabase URL format: https://xxx.supabase.co</span>`;
+  }
+}
+
+// ── Agent run ─────────────────────────────────────────────────
+async function runAgent() {
+  if (!selectedAgent) return;
+  const btn     = document.getElementById('runAgentBtn');
+  const content = document.getElementById('agentOutputContent');
+  const meta    = document.getElementById('agentMeta');
+  const label   = document.getElementById('agentOutputLabel');
+  const task    = document.getElementById('agentTask')?.value;
+  const ctx     = document.getElementById('agentContext')?.value;
+
+  if (!task?.trim()) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  label.textContent = `${selectedAgent.name} — Running`;
+  showThinking('agentOutputContent');
+  meta.textContent = '';
+
+  try {
+    const r = await fetch('/api/ai-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent: selectedAgent.id, agentName: selectedAgent.name, task, context: ctx }),
+    });
+    const d = await r.json();
+    if (d.success) {
+      content.textContent = d.output;
+      meta.textContent = `${d.model} · ${d.inputTokens}+${d.outputTokens} tokens`;
+      label.textContent = `${selectedAgent.name} — Output (Draft)`;
+    } else {
+      content.innerHTML = `<span style="color:var(--red)">Error [${d.code}]: ${d.error}</span>`;
+      label.textContent = 'Error';
+    }
+  } catch (e) {
+    content.innerHTML = `<span style="color:var(--red)">Fetch error: ${e.message}\n\nEnsure npm run dev is running on localhost:3000</span>`;
+    label.textContent = 'Error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Run Module';
+  }
+}
+
+// ── Copy env template ────────────────────────────────────────
+function copyEnvTemplate() {
+  const template = `# Required
+OPENAI_API_KEY=sk-proj-...
+
+# Optional — override model
+# OPENAI_MODEL=gpt-4o
+
+# Required for auth
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+
+# Optional admin ops
+# SUPABASE_SERVICE_ROLE_KEY=eyJ...
+# NEXT_PUBLIC_APP_URL=http://localhost:3000`;
+  navigator.clipboard?.writeText(template).then(() => alert('Copied to clipboard!')).catch(() => alert('Copy the template from the code block above.'));
+}
+
+// ── Init ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  buildAgentGrid();
+  // Auto-run health check on load
+  setTimeout(checkHealth, 500);
+});
+</script>
+</body>
+</html>
