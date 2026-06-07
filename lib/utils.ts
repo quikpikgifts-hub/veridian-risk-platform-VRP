@@ -37,10 +37,10 @@ export function formatNumber(value: number): string {
 }
 
 export function getRiskColor(score: number): string {
-  if (score >= 8) return '#E74C3C';
-  if (score >= 6.5) return '#E67E22';
-  if (score >= 5) return '#F1C40F';
-  return '#2ECC71';
+  if (score >= 8) return '#EF4444';
+  if (score >= 6.5) return '#F59E0B';
+  if (score >= 5) return '#3B82F6';
+  return '#22C55E';
 }
 
 export function getRiskLabel(score: number): string {
@@ -51,43 +51,43 @@ export function getRiskLabel(score: number): string {
 }
 
 export const severityConfig: Record<SeverityLevel, { label:string; color:string; bg:string; border:string; variant:'critical'|'high'|'medium'|'low' }> = {
-  critical: { label:'Critical', color:'#E74C3C', bg:'rgba(231,76,60,0.12)',  border:'rgba(231,76,60,0.35)',  variant:'critical' },
-  high:     { label:'High',     color:'#E67E22', bg:'rgba(230,126,34,0.12)', border:'rgba(230,126,34,0.35)', variant:'high'     },
-  medium:   { label:'Medium',   color:'#F1C40F', bg:'rgba(241,196,15,0.12)', border:'rgba(241,196,15,0.35)', variant:'medium'   },
-  low:      { label:'Low',      color:'#2ECC71', bg:'rgba(46,204,113,0.12)', border:'rgba(46,204,113,0.35)', variant:'low'      },
+  critical: { label:'Critical', color:'#EF4444', bg:'rgba(239,68,68,0.12)', border:'rgba(239,68,68,0.35)', variant:'critical' },
+  high:     { label:'High',     color:'#F59E0B', bg:'rgba(245,158,11,0.12)', border:'rgba(245,158,11,0.35)', variant:'high' },
+  medium:   { label:'Medium',   color:'#3B82F6', bg:'rgba(59,130,246,0.12)', border:'rgba(59,130,246,0.35)', variant:'medium' },
+  low:      { label:'Low',      color:'#22C55E', bg:'rgba(34,197,94,0.12)', border:'rgba(34,197,94,0.35)', variant:'low' },
 };
 
 export const statusConfig: Record<IncidentStatus, { label:string; color:string; bg:string }> = {
-  active:        { label:'Active',        color:'#E74C3C', bg:'rgba(231,76,60,0.12)'   },
-  investigating: { label:'Investigating', color:'#E67E22', bg:'rgba(230,126,34,0.12)'  },
-  contained:     { label:'Contained',     color:'#3498DB', bg:'rgba(52,152,219,0.12)'  },
-  resolved:      { label:'Resolved',      color:'#2ECC71', bg:'rgba(46,204,113,0.12)'  },
+  active:        { label:'Active',        color:'#EF4444', bg:'rgba(239,68,68,0.12)' },
+  investigating: { label:'Investigating', color:'#F59E0B', bg:'rgba(245,158,11,0.12)' },
+  contained:     { label:'Contained',     color:'#3B82F6', bg:'rgba(59,130,246,0.12)' },
+  resolved:      { label:'Resolved',      color:'#22C55E', bg:'rgba(34,197,94,0.12)' },
 };
 
 export const agentStatusConfig: Record<AgentStatus, { label:string; color:string; pulse:boolean }> = {
-  active:     { label:'Active',     color:'#2ECC71', pulse:true  },
-  processing: { label:'Processing', color:'#3498DB', pulse:true  },
-  standby:    { label:'Standby',    color:'#E67E22', pulse:false },
-  offline:    { label:'Offline',    color:'#8A8AA8', pulse:false },
+  active:     { label:'Active',     color:'#22C55E', pulse:true },
+  processing: { label:'Processing', color:'#3B82F6', pulse:true },
+  standby:    { label:'Standby',    color:'#F59E0B', pulse:false },
+  offline:    { label:'Offline',    color:'#A3A3A3', pulse:false },
 };
 
 export const workflowStatusConfig: Record<WorkflowStatus, { label:string; color:string; bg:string }> = {
-  pending:   { label:'Pending',   color:'#8A8AA8', bg:'rgba(138,138,168,0.12)' },
-  running:   { label:'Running',   color:'#3498DB', bg:'rgba(52,152,219,0.12)'  },
-  completed: { label:'Completed', color:'#2ECC71', bg:'rgba(46,204,113,0.12)'  },
-  failed:    { label:'Failed',    color:'#E74C3C', bg:'rgba(231,76,60,0.12)'   },
-  paused:    { label:'Paused',    color:'#E67E22', bg:'rgba(230,126,34,0.12)'  },
+  pending:   { label:'Pending',   color:'#A3A3A3', bg:'rgba(163,163,163,0.12)' },
+  running:   { label:'Running',   color:'#3B82F6', bg:'rgba(59,130,246,0.12)' },
+  completed: { label:'Completed', color:'#22C55E', bg:'rgba(34,197,94,0.12)' },
+  failed:    { label:'Failed',    color:'#EF4444', bg:'rgba(239,68,68,0.12)' },
+  paused:    { label:'Paused',    color:'#F59E0B', bg:'rgba(245,158,11,0.12)' },
 };
 
 export const reportStatusConfig: Record<ReportStatus, { label:string; color:string; bg:string }> = {
-  draft:     { label:'Draft',     color:'#8A8AA8', bg:'rgba(138,138,168,0.12)' },
-  review:    { label:'In Review', color:'#E67E22', bg:'rgba(230,126,34,0.12)'  },
-  approved:  { label:'Approved',  color:'#3498DB', bg:'rgba(52,152,219,0.12)'  },
-  delivered: { label:'Delivered', color:'#2ECC71', bg:'rgba(46,204,113,0.12)'  },
+  draft:     { label:'Draft',     color:'#A3A3A3', bg:'rgba(163,163,163,0.12)' },
+  review:    { label:'In Review', color:'#F59E0B', bg:'rgba(245,158,11,0.12)' },
+  approved:  { label:'Approved',  color:'#3B82F6', bg:'rgba(59,130,246,0.12)' },
+  delivered: { label:'Delivered', color:'#22C55E', bg:'rgba(34,197,94,0.12)' },
 };
 
 export function truncate(str: string, maxLen: number): string {
-  return str.length > maxLen ? str.slice(0, maxLen) + '…' : str;
+  return str.length > maxLen ? str.slice(0, maxLen) + '...' : str;
 }
 
 export function capitalize(str: string): string {
